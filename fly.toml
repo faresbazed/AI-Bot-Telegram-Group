@@ -1,0 +1,11 @@
+# Fly.io: fly launch, then fly secrets set TELEGRAM_BOT_TOKEN=... OPENAI_API_KEY=...
+# This is a worker with no public service — polling only.
+app = "telegram-group-bot"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
