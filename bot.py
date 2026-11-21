@@ -85,7 +85,9 @@ def clean_question(text: str, bot_username: str | None) -> str:
     """Strip @botname mentions and /ask commands from the text."""
     text = text.strip()
     if bot_username:
-        text = re.sub(rf"@{re.escape(bot_username)}\b", "", text, flags=re.IGNORECASE)
+        text = re.sub(
+            rf"@{re.escape(bot_username)}(?![A-Za-z0-9_])", "", text, flags=re.IGNORECASE
+        )
     text = re.sub(r"^/ask(@\w+)?\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^/start(@\w+)?\s*", "", text, flags=re.IGNORECASE)
     return text.strip()
@@ -226,13 +228,18 @@ async def on_group_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     if message is None or not message.text:
         return
-    # Never reply to other bots, and never reply to ourselves.
-    sender = message.from_user
-    if sender is None or sender.is_bot:
-        return
-
     chat = update.effective_chat
     assert chat is not None
+
+    # Telegram uses a fake bot user for messages sent on behalf of a chat.
+    sent_as_chat = (
+        chat.type in {"group", "supergroup"}
+        and message.sender_chat is not None
+        and not message.is_automatic_forward
+    )
+    sender = message.from_user
+    if not sent_as_chat and (sender is None or sender.is_bot):
+        return
 
     # Private chats: answer everything.
     if chat.type == "private":
@@ -244,7 +251,13 @@ async def on_group_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     bot_username = context.bot.username
-    mentioned = bool(bot_username) and f"@{bot_username.lower()}" in message.text.lower()
+    mentioned = bool(bot_username) and bool(
+        re.search(
+            rf"@{re.escape(bot_username)}(?![A-Za-z0-9_])",
+            message.text,
+            flags=re.IGNORECASE,
+        )
+    )
     replied_to_bot = bool(
         message.reply_to_message
         and message.reply_to_message.from_user
