@@ -226,13 +226,18 @@ async def on_group_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     if message is None or not message.text:
         return
-    # Never reply to other bots, and never reply to ourselves.
-    sender = message.from_user
-    if sender is None or sender.is_bot:
-        return
-
     chat = update.effective_chat
     assert chat is not None
+
+    # Telegram uses a fake bot user for messages sent on behalf of a chat.
+    sent_as_chat = (
+        chat.type in {"group", "supergroup"}
+        and message.sender_chat is not None
+        and not message.is_automatic_forward
+    )
+    sender = message.from_user
+    if not sent_as_chat and (sender is None or sender.is_bot):
+        return
 
     # Private chats: answer everything.
     if chat.type == "private":
