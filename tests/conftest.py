@@ -42,17 +42,18 @@ async def application(fake_bot):
 
 @pytest.fixture
 def make_update(fake_bot):
-    def factory(text="Hello", *, edited=False, chat_type="private", update_id=1):
+    def factory(text="Hello", *, edited=False, chat_type="private", update_id=1, **message_fields):
         entities = []
         if text and text.startswith("/"):
             entities.append(MessageEntity(MessageEntity.BOT_COMMAND, 0, len(text.split()[0])))
+        message_fields.setdefault("message_id", 1)
+        message_fields.setdefault("from_user", User(456, "Tester", False))
         message = Message(
-            message_id=1,
             date=datetime(2025, 1, 1, tzinfo=timezone.utc),
             chat=Chat(123, chat_type),
-            from_user=User(456, "Tester", False),
             text=text,
             entities=entities,
+            **message_fields,
         )
         message.set_bot(fake_bot)
         update = Update(update_id, **{"edited_message" if edited else "message": message})
