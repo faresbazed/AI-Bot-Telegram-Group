@@ -61,6 +61,8 @@ python bot.py
 
 Never commit `.env`. Only run **one** copy at a time — local or Railway, not both — or the bot will reply twice.
 
+**Running tests:** `.venv/bin/pip install -r requirements-dev.txt && .venv/bin/python -m pytest` (offline; no tokens needed).
+
 ## 4. Test it in the group
 
 1. Send `/start@your_bot_name` in the group — it should greet you in Arabic.
