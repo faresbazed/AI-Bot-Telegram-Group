@@ -263,14 +263,7 @@ async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE):
     log.exception("Update %s failed: %s", update, context.error)
 
 
-def main():
-    if not TELEGRAM_BOT_TOKEN:
-        raise SystemExit(
-            "TELEGRAM_BOT_TOKEN is not set. "
-            "Create a bot with @BotFather, then set the token as an env var."
-        )
-    log.info("Starting bot, respond_mode=%s model=%s", RESPOND_MODE, OPENAI_MODEL)
-    app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+def register_handlers(app):
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("ask", ask_command))
@@ -279,6 +272,17 @@ def main():
         MessageHandler(filters.TEXT & ~filters.COMMAND, on_group_message)
     )
     app.add_error_handler(on_error)
+
+
+def main():
+    if not TELEGRAM_BOT_TOKEN:
+        raise SystemExit(
+            "TELEGRAM_BOT_TOKEN is not set. "
+            "Create a bot with @BotFather, then set the token as an env var."
+        )
+    log.info("Starting bot, respond_mode=%s model=%s", RESPOND_MODE, OPENAI_MODEL)
+    app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+    register_handlers(app)
     # Polling is simplest for a hosted worker: no domain / webhook needed.
     app.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
 
