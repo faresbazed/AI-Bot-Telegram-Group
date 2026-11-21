@@ -88,8 +88,8 @@ def clean_question(text: str, bot_username: str | None) -> str:
         text = re.sub(
             rf"@{re.escape(bot_username)}(?![A-Za-z0-9_])", "", text, flags=re.IGNORECASE
         )
-    text = re.sub(r"^/ask(@\w+)?\s*", "", text)
-    text = re.sub(r"^/start(@\w+)?\s*", "", text)
+    text = re.sub(r"^/ask(@\w+)?\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^/start(@\w+)?\s*", "", text, flags=re.IGNORECASE)
     return text.strip()
 
 
