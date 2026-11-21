@@ -264,12 +264,15 @@ async def on_error(update: object, context: ContextTypes.DEFAULT_TYPE):
 
 
 def register_handlers(app):
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(CommandHandler("ask", ask_command))
-    app.add_handler(CommandHandler("reset", reset))
+    app.add_handler(CommandHandler("start", start, filters=filters.UpdateType.MESSAGE))
+    app.add_handler(CommandHandler("help", help_command, filters=filters.UpdateType.MESSAGE))
+    app.add_handler(CommandHandler("ask", ask_command, filters=filters.UpdateType.MESSAGE))
+    app.add_handler(CommandHandler("reset", reset, filters=filters.UpdateType.MESSAGE))
     app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, on_group_message)
+        MessageHandler(
+            filters.UpdateType.MESSAGE & filters.TEXT & ~filters.COMMAND,
+            on_group_message,
+        )
     )
     app.add_error_handler(on_error)
 
